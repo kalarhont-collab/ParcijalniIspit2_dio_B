@@ -10,27 +10,28 @@ public class Polaznik {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int PolaznikID;
+    @Column(name = "PolaznikID")
+    private int polaznikID;
 
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "Ime", nullable = false, length = 100)
     private String ime;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "Prezime", nullable = false, length = 100)
     private String prezime;
 
-    @OneToMany(mappedBy = "polaznik")
+    @OneToMany(mappedBy = "polaznik", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Upis> upisi = new HashSet<>();
 
     public Polaznik() {
     }
 
     public int getPolaznikID() {
-        return PolaznikID;
+        return polaznikID;
     }
 
     public void setPolaznikID(int polaznikID) {
-        PolaznikID = polaznikID;
+        this.polaznikID = polaznikID;
     }
 
     public String getIme() {

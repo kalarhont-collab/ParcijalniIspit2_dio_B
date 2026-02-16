@@ -11,34 +11,35 @@ public class ProgramObrazovanja {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int ProgramObrazovanjaID;
+    @Column(name = "ProgramObrazovanjaID")
+    private int programObrazovanjaID;
 
-    @Column(nullable = false, length = 100)
-    private String Naziv;
+    @Column(name = "Naziv", nullable = false, length = 100)
+    private String naziv;
 
-    @Column(nullable = false)
+    @Column(name = "CSVET", nullable = false)
     private int CSVET;
 
-    @OneToMany
+    @OneToMany(mappedBy = "programObrazovanja", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Upis> upisi = new HashSet<>();
 
     public ProgramObrazovanja() {
     }
 
     public int getProgramObrazovanjaID() {
-        return ProgramObrazovanjaID;
+        return programObrazovanjaID;
     }
 
     public void setProgramObrazovanjaID(int programObrazovanjaID) {
-        ProgramObrazovanjaID = programObrazovanjaID;
+        this.programObrazovanjaID = programObrazovanjaID;
     }
 
     public String getNaziv() {
-        return Naziv;
+        return naziv;
     }
 
     public void setNaziv(String naziv) {
-        Naziv = naziv;
+        this.naziv = naziv;
     }
 
     public int getCSVET() {

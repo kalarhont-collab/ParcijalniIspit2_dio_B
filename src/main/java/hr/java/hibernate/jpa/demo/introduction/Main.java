@@ -8,9 +8,8 @@ import org.hibernate.Transaction;
 import util.HibernateUtil;
 
 import java.sql.SQLException;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
 
 public class Main {
 
@@ -58,132 +57,136 @@ public class Main {
     private static void unesiNovogPolaznika() {
         System.out.print("Ime: ");
         String ime = sc.nextLine();
-
         System.out.print("Prezime: ");
         String prezime = sc.nextLine();
 
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        Transaction tx = session.beginTransaction();
+        Polaznik polaznik = new Polaznik();
+        polaznik.setIme(ime);
+        polaznik.setPrezime(prezime);
 
-        Polaznik p = new Polaznik();
-        p.setIme(ime);
-        p.setPrezime(prezime);
-
-        session.persist(p);
-        tx.commit();
-        session.close();
-
-        System.out.println("Polaznik uspješno unesen.");
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+            session.persist(polaznik);
+            tx.commit();
+            System.out.println("Polaznik uspješno unesen!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static void unesiNoviProgramObrazovanja() {
         System.out.print("Naziv programa: ");
         String naziv = sc.nextLine();
-
-        System.out.print("CSVET: ");
+        System.out.print("CSVET bodovi: ");
         int csvet = ucitajInt();
 
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        Transaction tx = session.beginTransaction();
+        ProgramObrazovanja program = new ProgramObrazovanja();
+        program.setNaziv(naziv);
+        program.setCSVET(csvet);
 
-        ProgramObrazovanja po = new ProgramObrazovanja();
-        po.setNaziv(naziv);
-        po.setCSVET(csvet);
-
-        session.persist(po);
-        tx.commit();
-        session.close();
-
-        System.out.println("Program obrazovanja uspješno unesen.");
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+            session.persist(program);
+            tx.commit();
+            System.out.println("Program obrazovanja uspješno unesen!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static void upisiPolaznikaNaProgram() {
-        System.out.print("ID polaznika: ");
-        int polaznikId = ucitajInt();
+        System.out.print("ID Polaznika: ");
+        int polaznikID = ucitajInt();
+        System.out.print("ID Programa obrazovanja: ");
+        int programID = ucitajInt();
 
-        System.out.print("ID programa obrazovanja: ");
-        int programId = ucitajInt();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Polaznik p = session.get(Polaznik.class, polaznikID);
+            ProgramObrazovanja po = session.get(ProgramObrazovanja.class, programID);
 
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        Transaction tx = session.beginTransaction();
+            if (p == null || po == null) {
+                System.out.println("Polaznik ili program ne postoji!");
+                return;
+            }
 
-        Polaznik p = session.get(Polaznik.class, polaznikId);
-        ProgramObrazovanja po = session.get(ProgramObrazovanja.class, programId);
-
-        if (p == null || po == null) {
-            System.out.println("Neispravan ID polaznika ili programa.");
-            tx.rollback();
-        } else {
             Upis upis = new Upis();
             upis.setPolaznik(p);
             upis.setProgramObrazovanja(po);
 
+            Transaction tx = session.beginTransaction();
             session.persist(upis);
             tx.commit();
-            System.out.println("Polaznik uspješno upisan.");
+            System.out.println("Polaznik uspješno upisan na program!");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        session.close();
     }
 
     private static void prebaciPolaznika() {
-        System.out.print("ID upisa: ");
-        int upisId = ucitajInt();
+        System.out.print("ID Polaznika: ");
+        int polaznikID = ucitajInt();
+        System.out.print("ID trenutnog programa: ");
+        int stariProgramID = ucitajInt();
+        System.out.print("ID novog programa: ");
+        int noviProgramID = ucitajInt();
 
-        System.out.print("ID novog programa obrazovanja: ");
-        int noviProgramId = ucitajInt();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
 
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        Transaction tx = session.beginTransaction();
+            String hql = "FROM Upis u WHERE u.polaznik.polaznikID = :pid AND u.programObrazovanja.programObrazovanjaID = :progid";
+            Upis upis = session.createQuery(hql, Upis.class)
+                    .setParameter("pid", polaznikID)
+                    .setParameter("progid", stariProgramID)
+                    .uniqueResult();
 
-        try {
-            Upis upis = session.get(Upis.class, upisId);
-            ProgramObrazovanja noviProgram =
-                    session.get(ProgramObrazovanja.class, noviProgramId);
+            ProgramObrazovanja noviProgram = session.get(ProgramObrazovanja.class, noviProgramID);
 
             if (upis == null || noviProgram == null) {
-                System.out.println("Neispravan ID upisa ili programa.");
+                System.out.println("Polaznik ili program ne postoji / upis ne postoji!");
                 tx.rollback();
-            } else {
-                upis.setProgramObrazovanja(noviProgram);
-                tx.commit();
-                System.out.println("Polaznik uspješno prebačen.");
+                return;
             }
 
+            upis.setProgramObrazovanja(noviProgram);
+            session.merge(upis);
+            tx.commit();
+            System.out.println("Polaznik uspješno prebačen na novi program!");
         } catch (Exception e) {
-            tx.rollback();
-            System.out.println("Greška pri prebacivanju polaznika.");
-        } finally {
-            session.close();
+            e.printStackTrace();
         }
     }
 
     private static void ispisiPolaznikePoProgramu() {
         System.out.print("ID programa obrazovanja: ");
-        int programId = ucitajInt();
+        int programID = ucitajInt();
 
-        Session session = HibernateUtil.getSessionFactory().openSession();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
 
-        String hql = "FROM Upis u WHERE u.programObrazovanja.programObrazovanjaID = :id";
+            String hql = "FROM Upis u WHERE u.programObrazovanja.programObrazovanjaID = :id";
 
-        Set<Upis> upisi = new HashSet<>(session.createQuery(hql, Upis.class)
-                .setParameter("id", programId)
-                .getResultList());
+            List<Upis> upisi = session.createQuery(hql, Upis.class)
+                    .setParameter("id", programID)
+                    .getResultList();
 
-        if (upisi.isEmpty()) {
-            System.out.println("Nema polaznika za odabrani program.");
-            return;
+            if (upisi.isEmpty()) {
+                System.out.println("Nema polaznika za odabrani program.");
+                return;
+            }
+
+            System.out.println("\n--- Popis polaznika ---");
+            for (Upis u : upisi) {
+                Polaznik p = u.getPolaznik();
+                ProgramObrazovanja po = u.getProgramObrazovanja();
+                System.out.printf("%s %s | %s | CSVET: %d%n",
+                        p.getIme(),
+                        p.getPrezime(),
+                        po.getNaziv(),
+                        po.getCSVET());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        System.out.println("\n--- Popis polaznika ---");
-        for (Upis u : upisi) {
-            Polaznik p = u.getPolaznik();
-            ProgramObrazovanja po = u.getProgramObrazovanja();
-            System.out.printf("%s %s | %s | CSVET: %d%n",
-                    p.getIme(), p.getPrezime(), po.getNaziv(), po.getCSVET());
-        }
-
-        session.close();
     }
 
 

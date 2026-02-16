@@ -1,31 +1,32 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE hibernate-configuration PUBLIC
         "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
-        <!-- Database connection settings -->
+        <!-- SQL Server connection settings -->
         <property name="hibernate.connection.driver_class">com.microsoft.sqlserver.jdbc.SQLServerDriver</property>
-        <property name="hibernate.connection.url"> jdbc:sqlserver://localhost;databaseName=JavaAdvHibernate;encrypt=false;trustServerCertificate=true</property>
+        <property name="hibernate.connection.url">
+            jdbc:sqlserver://localhost:1433;databaseName=JavaAdvHibernate;encrypt=false;trustServerCertificate=true
+        </property>
         <property name="hibernate.connection.username">sa</property>
         <property name="hibernate.connection.password">SQL</property>
 
-        <!-- SQL dialect -->
+        <!-- SQL Server dialect -->
         <property name="hibernate.dialect">org.hibernate.dialect.SQLServerDialect</property>
 
-        <!-- Enable Hibernate's automatic session context management -->
+        <!-- Session context -->
         <property name="hibernate.current_session_context_class">thread</property>
 
-        <!-- Echo all executed SQL to stdout -->
+        <!-- Show SQL in console -->
         <property name="hibernate.show_sql">true</property>
 
-        <!-- Drop and re-create the database schema on startup -->
-        <property name="hibernate.hbm2ddl.auto">create</property>
+        <!-- Schema auto-update -->
+        <property name="hibernate.hbm2ddl.auto">update</property>
 
-        <!-- Entity mapping -->
+        <!-- Mapping entities -->
         <mapping class="hr.java.hibernate.jpa.demo.introduction.model.Polaznik"/>
         <mapping class="hr.java.hibernate.jpa.demo.introduction.model.ProgramObrazovanja"/>
         <mapping class="hr.java.hibernate.jpa.demo.introduction.model.Upis"/>
-
     </session-factory>
 </hibernate-configuration>

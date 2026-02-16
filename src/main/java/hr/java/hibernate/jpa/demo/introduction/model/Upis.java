@@ -8,7 +8,8 @@ public class Upis {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int UpisID;
+    @Column(name = "UpisID")
+    private int upisID;
 
     @ManyToOne
     @JoinColumn(name = "IDPolaznik", nullable = false)
@@ -22,11 +23,11 @@ public class Upis {
     }
 
     public int getUpisID() {
-        return UpisID;
+        return upisID;
     }
 
     public void setUpisID(int upisID) {
-        UpisID = upisID;
+        this.upisID = upisID;
     }
 
     public Polaznik getPolaznik() {
