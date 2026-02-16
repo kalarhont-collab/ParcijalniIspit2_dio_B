@@ -5,7 +5,7 @@ USE JavaAdvHibernate
 GO
 
 
--- TABLICE --
+--- TABLICE ---
 
 CREATE TABLE Polaznik (
 PolaznikID INT PRIMARY KEY IDENTITY,
